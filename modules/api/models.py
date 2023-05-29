@@ -129,7 +129,7 @@ StableDiffusionImg2ImgProcessingAPI = PydanticModelGenerator(
 
 StableDiffusionVid2VidProcessingAPI = PydanticModelGenerator(
     "StableDiffusionProcessingVid2Vid",
-    StableDiffusionProcessingVid2Vid,
+    StableDiffusionProcessingImg2Img,
     [
         {"key": "sampler_index", "type": str, "default": "Euler"},
         {"key": "input_video", "type": str, "default": None},
