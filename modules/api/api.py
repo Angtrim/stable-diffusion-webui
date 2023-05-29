@@ -356,7 +356,8 @@ class Api:
           im_pil = Image.fromarray(image)     
           init_images.append(im_pil)
           success,image = vidcap.read()
-
+        
+        vid2vidreq.init_images = init_images
         mask = vid2vidreq.mask
         if mask:
             mask = decode_base64_to_image(mask)
@@ -373,8 +374,7 @@ class Api:
             "sampler_name": validate_sampler_name(vid2vidreq.sampler_name or vid2vidreq.sampler_index),
             "do_not_save_samples": not vid2vidreq.save_images,
             "do_not_save_grid": not vid2vidreq.save_images,
-            "mask": mask,
-            "init_images": init_images
+            "mask": mask
         })
         if populate.sampler_name:
             populate.sampler_index = None  # prevent a warning later on
