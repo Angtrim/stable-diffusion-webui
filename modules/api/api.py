@@ -374,6 +374,7 @@ class Api:
             "do_not_save_samples": not vid2vidreq.save_images,
             "do_not_save_grid": not vid2vidreq.save_images,
             "mask": mask,
+            "init_images": init_images
         })
         if populate.sampler_name:
             populate.sampler_index = None  # prevent a warning later on
