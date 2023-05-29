@@ -409,12 +409,12 @@ class Api:
                 if selectable_scripts is not None:
                     p.script_args = script_args
                     processed = scripts.scripts_img2img.run(p, *p.script_args) # Need to pass args as list here
-                    processed_images.append(processed.images)
+                    processed_images = processed_images + processed.images
                     last_processed = processed
                 else:
                     p.script_args = tuple(script_args) # Need to pass args as tuple here
                     processed = process_images(p)
-                    processed_images.append(processed.images)
+                    processed_images = processed_images + processed.images
                     last_processed = processed
                 shared.state.end()
 
