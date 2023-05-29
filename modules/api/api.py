@@ -437,6 +437,7 @@ class Api:
             pil.save(full_dir+"/frame_0"+str(count)+".jpg"
             count = count + \
         os.system("ffmpeg -r 1 -i"+full_dir+"/frame_%0d.png -vcodec mpeg4 -y "+full_dir+"/out.mp4")
+        return full_dir+"/out.mp4"
             
             
         
