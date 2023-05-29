@@ -30,6 +30,7 @@ from typing import Dict, List, Any
 import piexif
 import piexif.helper
 import cv2
+import uuid
 
 
 def upscaler_to_index(name: str):
@@ -424,8 +425,21 @@ class Api:
             vid2vidreq.init_images = None
             vid2vidreq.mask = None
 
-        return models.VideoToVideoResponse(video=b64images[0], parameters=vars(vid2vidreq), info=last_processed.js())
+        return models.VideoToVideoResponse(video=images_to_video_path(processed_images), parameters=vars(vid2vidreq), info=last_processed.js())
     
+    def images_to_video_path(images):
+
+        count = 0
+        dir_name = str(uuid.uuid4())
+        full_dir = "/workspace/"+dir_name
+        os.mkdir(full_dir) 
+        for img in images:
+            pil.save(full_dir+"/frame_0"+str(count)+".jpg"
+            count = count + \
+        os.system("ffmpeg -r 1 -i"+full_dir+"/frame_%0d.png -vcodec mpeg4 -y "+full_dir+"/out.mp4")
+            
+            
+        
 
     def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
         init_images = img2imgreq.init_images
