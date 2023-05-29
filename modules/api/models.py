@@ -127,6 +127,23 @@ StableDiffusionImg2ImgProcessingAPI = PydanticModelGenerator(
     ]
 ).generate_model()
 
+StableDiffusionVid2VidProcessingAPI = PydanticModelGenerator(
+    "StableDiffusionProcessingVid2Vid",
+    StableDiffusionProcessingVid2Vid,
+    [
+        {"key": "sampler_index", "type": str, "default": "Euler"},
+        {"key": "input_video", "type": str, "default": None},
+        {"key": "denoising_strength", "type": float, "default": 0.75},
+        {"key": "mask", "type": str, "default": None},
+        {"key": "include_init_images", "type": bool, "default": False, "exclude" : True},
+        {"key": "script_name", "type": str, "default": None},
+        {"key": "script_args", "type": list, "default": []},
+        {"key": "send_images", "type": bool, "default": True},
+        {"key": "save_images", "type": bool, "default": False},
+        {"key": "alwayson_scripts", "type": dict, "default": {}},
+    ]
+).generate_model()
+
 class TextToImageResponse(BaseModel):
     images: List[str] = Field(default=None, title="Image", description="The generated image in base64 format.")
     parameters: dict
@@ -134,6 +151,11 @@ class TextToImageResponse(BaseModel):
 
 class ImageToImageResponse(BaseModel):
     images: List[str] = Field(default=None, title="Image", description="The generated image in base64 format.")
+    parameters: dict
+    info: str
+        
+class VideoToVideoResponse(BaseModel):
+    video: str = Field(default=None, title="Video", description="The generated video, as URL")
     parameters: dict
     info: str
 
