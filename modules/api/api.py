@@ -29,6 +29,7 @@ from modules import devices
 from typing import Dict, List, Any
 import piexif
 import piexif.helper
+import cv2
 
 
 def upscaler_to_index(name: str):
@@ -209,6 +210,7 @@ class Api:
 
         self.default_script_arg_txt2img = []
         self.default_script_arg_img2img = []
+        self.default_script_arg_vid2vid = []
 
     def add_api_route(self, path: str, endpoint, **kwargs):
         if shared.cmd_opts.api_auth:
@@ -342,11 +344,20 @@ class Api:
     
     
     def vid2vidapi(self, vid2vidreq: models.StableDiffusionVid2VidProcessingAPI):
-        init_images = img2imgreq.init_images
-        if init_images is None:
-            raise HTTPException(status_code=404, detail="Init image not found")
+        input_video = vid2vidreq.input_video
+        if input_video is None:
+            raise HTTPException(status_code=404, detail="Init video not found")
+        init_images = []
+        # let's turn the video into images and call batch img2img
+        vidcap = cv2.VideoCapture(input_video)
+        success,image = vidcap.read()
+        count = 0
+        while success:
+          im_pil = Image.fromarray(image)     
+          init_images.append(im_pil)
+          success,image = vidcap.read()
 
-        mask = img2imgreq.mask
+        mask = vid2vidreq.mask
         if mask:
             mask = decode_base64_to_image(mask)
 
@@ -354,14 +365,14 @@ class Api:
         if not script_runner.scripts:
             script_runner.initialize_scripts(True)
             ui.create_ui()
-        if not self.default_script_arg_img2img:
-            self.default_script_arg_img2img = self.init_default_script_args(script_runner)
-        selectable_scripts, selectable_script_idx = self.get_selectable_script(img2imgreq.script_name, script_runner)
+        if not self.default_script_arg_vid2vid:
+            self.default_script_arg_vid2vid = self.init_default_script_args(script_runner)
+        selectable_scripts, selectable_script_idx = self.get_selectable_script(vid2vidreq.script_name, script_runner)
 
-        populate = img2imgreq.copy(update={  # Override __init__ params
-            "sampler_name": validate_sampler_name(img2imgreq.sampler_name or img2imgreq.sampler_index),
-            "do_not_save_samples": not img2imgreq.save_images,
-            "do_not_save_grid": not img2imgreq.save_images,
+        populate = vid2vidreq.copy(update={  # Override __init__ params
+            "sampler_name": validate_sampler_name(vid2vidreq.sampler_name or vid2vidreq.sampler_index),
+            "do_not_save_samples": not vid2vidreq.save_images,
+            "do_not_save_grid": not vid2vidreq.save_images,
             "mask": mask,
         })
         if populate.sampler_name:
@@ -373,14 +384,14 @@ class Api:
         args.pop('script_args', None)  # will refeed them to the pipeline directly after initializing them
         args.pop('alwayson_scripts', None)
 
-        script_args = self.init_script_args(img2imgreq, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
+        script_args = self.init_script_args(vid2vidreq, self.default_script_arg_vid2vid, selectable_scripts, selectable_script_idx, script_runner)
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
 
         with self.queue_lock:
             p = StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)
-            p.init_images = [decode_base64_to_image(x) for x in init_images]
+            p.init_images = init_images
             p.scripts = script_runner
             p.outpath_grids = opts.outdir_img2img_grids
             p.outpath_samples = opts.outdir_img2img_samples
@@ -396,11 +407,11 @@ class Api:
 
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
 
-        if not img2imgreq.include_init_images:
-            img2imgreq.init_images = None
-            img2imgreq.mask = None
+        if not vid2vidreq.include_init_images:
+            vid2vidreq.init_images = None
+            vid2vidreq.mask = None
 
-        return models.ImageToImageResponse(images=b64images, parameters=vars(img2imgreq), info=processed.js())
+        return models.VideoToVideoResponse(video=b64images[0], parameters=vars(vid2vidreq), info=processed.js())
     
 
     def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
