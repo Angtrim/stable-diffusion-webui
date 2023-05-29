@@ -356,6 +356,10 @@ class Api:
           im_pil = Image.fromarray(image)     
           init_images.append(im_pil)
           success,image = vidcap.read()
+          count = count + 1
+          if count == 90:
+            success = False
+            
         
         vid2vidreq.init_images = init_images
         mask = vid2vidreq.mask
