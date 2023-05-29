@@ -392,28 +392,35 @@ class Api:
         args.pop('save_images', None)
 
         with self.queue_lock:
-            p = StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)
-            p.init_images = init_images
-            p.scripts = script_runner
-            p.outpath_grids = opts.outdir_img2img_grids
-            p.outpath_samples = opts.outdir_img2img_samples
+            processed_images = []
+            last_processed = None
+            for immg in init_images:
+                p = StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)
+                p.init_images = [immg]
+                p.scripts = script_runner
+                p.outpath_grids = opts.outdir_img2img_grids
+                p.outpath_samples = opts.outdir_img2img_samples
 
-            shared.state.begin()
-            if selectable_scripts is not None:
-                p.script_args = script_args
-                processed = scripts.scripts_img2img.run(p, *p.script_args) # Need to pass args as list here
-            else:
-                p.script_args = tuple(script_args) # Need to pass args as tuple here
-                processed = process_images(p)
-            shared.state.end()
+                shared.state.begin()
+                if selectable_scripts is not None:
+                    p.script_args = script_args
+                    processed = scripts.scripts_img2img.run(p, *p.script_args) # Need to pass args as list here
+                    processed_images.append(processed.images)
+                    last_processed = processed
+                else:
+                    p.script_args = tuple(script_args) # Need to pass args as tuple here
+                    processed = process_images(p)
+                    processed_images.append(processed.images)
+                    last_processed = processed
+                shared.state.end()
 
-        b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
+        b64images = list(map(encode_pil_to_base64,processed_images)) if send_images else []
 
         if not vid2vidreq.include_init_images:
             vid2vidreq.init_images = None
             vid2vidreq.mask = None
 
-        return models.VideoToVideoResponse(video=b64images[0], parameters=vars(vid2vidreq), info=processed.js())
+        return models.VideoToVideoResponse(video=b64images[0], parameters=vars(vid2vidreq), info=last_processed.js())
     
 
     def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
