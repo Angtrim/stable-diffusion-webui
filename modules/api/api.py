@@ -70,6 +70,19 @@ def decode_base64_to_image(encoding):
         return image
     except Exception as e:
         raise HTTPException(status_code=500, detail="Invalid encoded image") from e
+        
+        
+def images_to_video_path(images):
+    count = 0
+    dir_name = str(uuid.uuid4())
+    full_dir = "/workspace/"+dir_name
+    os.mkdir(full_dir) 
+    for img in images:
+        pil.save(full_dir+"/frame_0"+str(count)+".jpg")
+        count = count + \
+    os.system("ffmpeg -r 1 -i"+full_dir+"/frame_%0d.png -vcodec mpeg4 -y "+full_dir+"/out.mp4")
+    return full_dir+"/out.mp4"
+            
 
 
 def encode_pil_to_base64(image):
@@ -343,17 +356,6 @@ class Api:
 
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
     
-    def images_to_video_path(images):
-
-        count = 0
-        dir_name = str(uuid.uuid4())
-        full_dir = "/workspace/"+dir_name
-        os.mkdir(full_dir) 
-        for img in images:
-            pil.save(full_dir+"/frame_0"+str(count)+".jpg")
-            count = count + \
-        os.system("ffmpeg -r 1 -i"+full_dir+"/frame_%0d.png -vcodec mpeg4 -y "+full_dir+"/out.mp4")
-        return full_dir+"/out.mp4"
     
     def vid2vidapi(self, vid2vidreq: models.StableDiffusionVid2VidProcessingAPI):
         input_video = vid2vidreq.input_video
