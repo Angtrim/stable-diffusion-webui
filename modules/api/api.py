@@ -79,9 +79,9 @@ def images_to_video_path(images):
     full_dir = "/workspace/"+dir_name
     os.mkdir(full_dir) 
     for img in images:
-        img.save(full_dir+"/frame_0"+str(count)+".jpg")
+        img.save(full_dir+"/frame_0"+str(count)+".png")
         count = count + \
-    os.system("ffmpeg -r 1 -i "+full_dir+"/frame_%0d.png -vcodec mpeg4 -y "+full_dir+"/out.mp4")
+    os.system("ffmpeg -r 1 -pattern_type glob -i "+full_dir+"/*.png -vcodec mpeg4 -y "+full_dir+"/out.mp4")
     return full_dir+"/out.mp4"
             
 
