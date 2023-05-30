@@ -81,7 +81,7 @@ def images_to_video_path(images):
     for img in images:
         img.save(full_dir+"/frame"+str(count)+".png")
         count = count + 1
-    os.system("ffmpeg -r 24 -i "+full_dir+"/frame%d.png -vcodec mpeg4 -y "+full_dir+"/out.mp4")
+    os.system("ffmpeg -crf 5 -r 24 -i "+full_dir+"/frame%d.png -vcodec mpeg4 -y "+full_dir+"/out.mp4")
     return full_dir+"/out.mp4"
             
 
