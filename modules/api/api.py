@@ -79,7 +79,7 @@ def images_to_video_path(images):
     full_dir = "/workspace/"+dir_name
     os.mkdir(full_dir) 
     for img in images:
-        img.save(full_dir+"/frame"+str(count)+".png")
+        img.save(full_dir+"/frame"+str(count)+".png").convert("RGB")
         count = count + 1
     os.system("ffmpeg -r 24 -i "+full_dir+"/frame%d.png -vcodec mpeg4 -y "+full_dir+"/out.mp4")
     return full_dir+"/out.mp4"
@@ -366,12 +366,14 @@ class Api:
         # let's turn the video into images and call batch img2img
         vidcap = cv2.VideoCapture(input_video)
         success,image = vidcap.read()
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         count = 0
         while success:
-          im_pil = Image.fromarray(image).convert("BGR")
+          im_pil = Image.fromarray(image).convert("RGB")
           im_pil.save("/workspace/ex.png")
           init_images.append(im_pil)
           success,image = vidcap.read()
+          image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
           count = count + 1
           if count == 90:
             success = False
