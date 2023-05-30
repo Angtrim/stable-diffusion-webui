@@ -368,7 +368,7 @@ class Api:
         success,image = vidcap.read()
         count = 0
         while success:
-          im_pil = Image.fromarray(image).convert("RGB")
+          im_pil = Image.fromarray(image).convert("BGR")
           im_pil.save("/workspace/ex.png")
           init_images.append(im_pil)
           success,image = vidcap.read()
